@@ -15,6 +15,3 @@ COPY . .
 
 # Default Command
 CMD [ "npm", "run", "start:dev" ]
-
-# Expose the port on which the service will run
-EXPOSE 5008
