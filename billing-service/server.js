@@ -1,9 +1,20 @@
 // imports
 const express = require("express");
 const morgan = require("morgan");
+const rabbitMQ = require("../lib/rabbitmq");
 
 // init express app
 const app = express();
+let channel;
+
+const connectRabbitMQ = async () => {
+  try {
+    channel = await rabbitMQ.connectToRabbitMQ();
+  } catch (error) {
+    console.error("Error starting application:", error);
+    process.exit(1);
+  }
+};
 
 // use morgan middleware
 app.use(morgan("combined"));
@@ -19,9 +30,7 @@ app.get("/billing", (req, res) => {
 });
 
 app.post("/billing", (req, res) => {
-  console.log('===============billing=====================');
-  console.log(req.body);
-  console.log('====================================');
+  rabbitMQ.sendMessageToQueue(channel, rabbitMQ.BILLING_QUEUE, req.body);
   res.send("POST BILLING");
 });
 
@@ -35,5 +44,16 @@ app.delete("/billing", (req, res) => {
 
 app.listen(5005, () => {
   console.log('server started on port 5005');
+  connectRabbitMQ();
 });
 
+process.on("SIGINT", async () => {
+  try {
+    await channel.close();
+    console.log("RabbitMQ channel closed.");
+    process.exit(0);
+  } catch (error) {
+    console.error("Error closing RabbitMQ channel:", error);
+    process.exit(1);
+  }
+});
