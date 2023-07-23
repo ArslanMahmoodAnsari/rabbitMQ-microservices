@@ -1,32 +1,28 @@
-// imports
-const morgan = require("morgan");
-const express = require("express");
+
 const rabbitMQ = require("../lib/rabbitmq");
 
 let channel;
-const app = express();
-
-
-// use morgan middleware
-app.use(morgan("combined"));
-app.use(express.json());
 
 const subscribeUserQueue = async(res) => {
   console.log('==============User QUEUE============');
   console.log(res);
   console.log('====================================');
+  rabbitMQ.sendMessageToQueue(channel, rabbitMQ.WEB_HOOK_QUEUE, res)
 }
 
 const subscribeShippingQueue = async(res) => {
   console.log('============Shipping QUEUE==========');
   console.log(res);
   console.log('====================================');
+  rabbitMQ.sendMessageToQueue(channel, rabbitMQ.WEB_HOOK_QUEUE, res)
+
 }
 
 const subscribeBillingQueue = async(res) => {
   console.log('=============Billing QUEUE==========');
   console.log(res);
   console.log('====================================');
+  rabbitMQ.sendMessageToQueue(channel, rabbitMQ.WEB_HOOK_QUEUE, res)
 }
 
 const connectRabbitMQ = async () => {
@@ -41,10 +37,7 @@ const connectRabbitMQ = async () => {
   }
 };
 
-app.listen(5008, () => {
-  console.log("server started on port 5008");
-  connectRabbitMQ();
-});
+connectRabbitMQ();
 
 process.on("SIGINT", async () => {
   try {
