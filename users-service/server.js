@@ -1,7 +1,7 @@
 // imports
 const express = require("express");
 const morgan = require("morgan");
-const rabbitMQ = require("../lib/rabbitmq");
+const rabbitMQ = require("./lib/rabbitmq");
 
 // init express app
 const app = express();

@@ -1,0 +1,78 @@
+version: "3"
+services:
+  rabbitmq-service:
+    restart: always
+    image: rabbitmq:management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+
+  web-hook-service:
+    restart: always
+    build:  
+      context: .
+      dockerfile: ./web-hook-service/dockerfile
+    volumes:
+      - /app/node_modules
+      - /app/lib
+      - ./web-hook-service:/app
+    depends_on:
+      - rabbitmq-service
+
+  data-service:
+    restart: always
+    build: 
+      context: .
+      dockerfile: ./data-service/dockerfile
+    volumes:
+      - /app/node_modules
+      - /app/lib
+      - ./data-service:/app
+    depends_on:
+      - web-hook-service
+
+  shipping-service:
+    restart: always # default is 'no', other values: always, on-failure and unless-stopped
+    build: 
+      context: .
+      dockerfile: ./shipping-service/dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - /app/node_modules
+      - /app/lib
+      - ./shipping-service:/app
+    depends_on:
+      - data-service
+
+  users-service:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./users-service/dockerfile
+    ports:
+      - "5004:5004"
+    volumes:
+      - /app/node_modules
+      - /app/lib
+      - ./users-service:/app
+    depends_on:
+      - data-service
+
+  billing-service:
+    restart: always
+    build: 
+      context: .
+      dockerfile: ./billing-service/dockerfile
+    ports:
+      - "5005:5005"
+    volumes:
+      - /app/node_modules
+      - /app/lib
+      - ./billing-service:/app
+    depends_on:
+      - data-service
+

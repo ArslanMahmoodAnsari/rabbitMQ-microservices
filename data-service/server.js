@@ -1,5 +1,5 @@
 
-const rabbitMQ = require("../lib/rabbitmq");
+const rabbitMQ = require("./lib/rabbitmq");
 
 let channel;
 
