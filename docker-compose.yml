@@ -9,6 +9,11 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=user
       - RABBITMQ_DEFAULT_PASS=password
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s  # Check the health every 20 seconds
+      timeout: 5s   # Timeout if the health check command doesn't respond within 5 seconds
+      retries: 3    # Retry 3 times before considering the health check as failed
 
   web-hook-service:
     restart: always
@@ -20,7 +25,8 @@ services:
       - /app/lib
       - ./web-hook-service:/app
     depends_on:
-      - rabbitmq-service
+      rabbitmq-service:
+        condition: service_healthy
 
   data-service:
     restart: always
@@ -75,4 +81,3 @@ services:
       - ./billing-service:/app
     depends_on:
       - data-service
-
